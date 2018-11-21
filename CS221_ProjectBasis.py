@@ -2,7 +2,10 @@ import tensorflow as tf
 import pandas as pd
 import json
 import numpy as np
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, preprocessing
+from sklearn.feature_extraction.text import TfidfVectorizer
+from nltk import word_tokenize 
+from nltk.stem import WordNetLemmatizer 
 
 ##########################
 # TODO:
@@ -38,6 +41,9 @@ for i in data:
     X.append(i['reviewText'])
     Y.append(i['overall'])
     asin_dict[i['asin']].append(i['reviewText'])
+
+for j in asin_dict.keys():
+	asin_dict[j] = " ".join(asin_dict[j])
 
 print X[1]
 print Y[1]
@@ -96,6 +102,28 @@ def generateCorpus(X):
 	return all_words
 
 # Returns a sorted list of tuples containing (word, weight)
+def TF_IDF(asin, asin_dict, n):
+	vectorizer = TfidfVectorizer(max_df = 0.90,
+				     min_df = int(1),
+				     tokenizer = lambda str: {wl = WordNetLemmatizer()
+							      return [wl.lemmatize(t) for t in word_tokenize(str)]
+							     },
+				     strip_accents = ‘ascii’,
+				     use_idf = True,
+				     smooth_idf = True)
+	dict_counts = vectorizer.fit_transform(asin_dict)
+	TF_IDF = vectorizer.transform(asin_dict[asin]).toarray()
+	
+	word_map=vectorizer.get_feature_names()
+	vec_pairs = [(word_map[j], TF_IDF[j]) for j in range(len(TF_IDF))]
+	
+	vec_pairs.sort(key = lambda word: word[1]), reverse = True)
+	
+	return vec_pairs
+    
+	
+"""
+# Returns a sorted list of tuples containing (word, weight)
 def TF_IDF(asin, corpus, asin_dict):
     all_words_asin = defaultdict(int)
     total_word_num = 0
@@ -120,3 +148,4 @@ def TF_IDF(asin, corpus, asin_dict):
     
     TF_IDF.sort(key = lambda word: word[1]), reverse = True)
     return TF_IDF
+"""
