@@ -37,11 +37,18 @@ X=[] #reviews
 Y=[] #ratings
 asin_dict = defaultdict(list)
 
+# Assigns X as a list of reviews, Y as a list of star ratings, and asin_dict as a dictionary with keys asin_pos and asin_neg
+# where asin_pos contains all reviews associated with that asin with a star-rating of 4 or 5, and asin_neg has all reviews
+# for that asin with a star rating of 1, 2, or 3
 for i in data:
     X.append(i['reviewText'])
     Y.append(i['overall'])
-    asin_dict[i['asin']].append(i['reviewText'])
+    if i['overall'] >= 4:
+	asin_dict[i['asin']+"_pos"].append(i['reviewText'])
+    else:
+	asin_dict[i['asin']+"_neg"].append(i['reviewText'])
 
+# Merges the list of reviews for each asin_pos and asin_neg into a single string
 for j in asin_dict.keys():
 	asin_dict[j] = " ".join(asin_dict[j])
 
