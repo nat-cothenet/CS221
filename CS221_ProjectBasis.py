@@ -1,6 +1,3 @@
-##Srishti edited this on 11/30 to allow the code to read book data. Logic: Instead of reading the entire file just read the number of data points we need 
-
-
 import collections
 import string
 import re
@@ -9,18 +6,11 @@ import tensorflow as tf
 import pandas as pd
 import json
 import numpy as np
-from sklearn.model_selection import train_test_split, preprocessing
+from sklearn.model_selection import train_test_split
+from sklearn import preprocessing
 from sklearn.feature_extraction.text import TfidfVectorizer
 from nltk import word_tokenize 
 from nltk.stem import WordNetLemmatizer 
-
-##########################
-# TODO:
-# Update read-in to Books data subset (full dataset won't upload)
-# Review and comment code
-# Test and debug TF-IDF, especially looking for ways to speed it up
-##########################
-
 
 ###########################
 # Reading in dataset
@@ -152,34 +142,6 @@ def TF_IDF(asin, asin_dict, n):
 
     return sorted_keywords[:n]
     
-	
-"""
-# Returns a sorted list of tuples containing (word, weight)
-def TF_IDF(asin, corpus, asin_dict):
-    all_words_asin = defaultdict(int)
-    total_word_num = 0
-    my_X = asin_dict[asin]
-    
-	for k in range(len(my_X)):
-		wordList = re.sub("[^\w]", " ",  my_X[k]).split() # Clean and split data
-		for words in wordList:
-			all_words_asin[words.lower()] += 1
-            total_word_num += 1
-    
-    TF_IDF = list()
-    num_docs = len(asin_dict)
-    for k in all_words_asin.keys():
-        TF = all_words_asin[k]/total_word_num
-        num_docs_containing_k = 0
-        for j in asin_dict.keys():
-            if k in " ".join(asin_dict[j]):
-                num_docs_containing_k += 1
-        IDF = log(num_docs/num_docs_containing_k)
-        TF_IDF.append((k, TF/IDF))
-    
-    TF_IDF.sort(key = lambda word: word[1]), reverse = True)
-    return TF_IDF
-"""
 
 ###########################
 # Run TF-IDF
