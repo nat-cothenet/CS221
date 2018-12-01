@@ -1,6 +1,10 @@
 ##Srishti edited this on 11/30 to allow the code to read book data. Logic: Instead of reading the entire file just read the number of data points we need 
 
 
+import collections
+import string
+import re
+import nltk
 import tensorflow as tf
 import pandas as pd
 import json
@@ -64,6 +68,8 @@ for i in data:
 # Merges the list of reviews for each asin_pos and asin_neg into a single string
 for j in asin_dict.keys():
 	asin_dict[j] = " ".join(asin_dict[j])
+	asin_dict[j] = re.sub(ur"\p{P}+", " ", asin_dict[j])
+	asin_dict[j] = re.sub(ur'[^\w\s]',' ',asin_dict[j])
 
 print X[1]
 print Y[1]
@@ -121,25 +127,30 @@ def generateCorpus(X):
 
 	return all_words
 
+class LemmaTokenizer(object):
+    def __init__(self):
+        self.wnl = WordNetLemmatizer()
+    def __call__(self, doc):
+        return [self.wnl.lemmatize(t, 'n') for t in word_tokenize(doc)]
+
 # Returns a sorted list of tuples containing (word, weight)
 def TF_IDF(asin, asin_dict, n):
-	vectorizer = TfidfVectorizer(max_df = 0.90,
-				     min_df = int(1),
-				     tokenizer = lambda str: {wl = WordNetLemmatizer()
-							      return [wl.lemmatize(t) for t in word_tokenize(str)]
-							     },
-				     strip_accents = ‘ascii’,
-				     use_idf = True,
-				     smooth_idf = True)
-	dict_counts = vectorizer.fit_transform(asin_dict)
-	TF_IDF = vectorizer.transform(asin_dict[asin]).toarray()
-	
-	word_map=vectorizer.get_feature_names()
-	vec_pairs = [(word_map[j], TF_IDF[j]) for j in range(len(TF_IDF))]
-	
-	vec_pairs.sort(key = lambda word: word[1]), reverse = True)
-	
-	return vec_pairs
+
+    vectorizer = TfidfVectorizer(stop_words="english", analyzer='word', lowercase = True, tokenizer = LemmaTokenizer(), ngram_range=(1, 1), max_df=0.90)
+
+    vectorizer.fit_transform(list(asin_dict.values()))
+    tf = vectorizer.transform([asin_dict[asin]])
+    word_map=vectorizer.get_feature_names()
+
+
+    keywords = []
+    for col in tf.nonzero()[1]:
+        #my_str = str(word_map[col]) + ' - ' + str(tf[0, col])
+        keywords.append((word_map[col],tf[0, col]))
+
+    sorted_keywords = sorted(keywords, key=lambda t: t[1] * -1)
+
+    return sorted_keywords[:n]
     
 	
 """
@@ -169,3 +180,17 @@ def TF_IDF(asin, corpus, asin_dict):
     TF_IDF.sort(key = lambda word: word[1]), reverse = True)
     return TF_IDF
 """
+
+###########################
+# Run TF-IDF
+###########################
+
+test_list = [2, 5, 6, 7, 9, 11, 12, 13]
+
+for i in test_list:
+    my_asin = asin_dict.keys()[i-1]
+    print my_asin
+    print asin_dict[my_asin]
+
+    keywords = TF_IDF(my_asin, asin_dict, 5)
+    print keywords
