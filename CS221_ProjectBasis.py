@@ -1,3 +1,6 @@
+##Srishti edited this on 11/30 to allow the code to read book data. Logic: Instead of reading the entire file just read the number of data points we need 
+
+
 import tensorflow as tf
 import pandas as pd
 import json
@@ -18,15 +21,25 @@ from nltk.stem import WordNetLemmatizer
 ###########################
 # Reading in dataset
 ###########################
-
-# df=pd.read_csv('/Users/srishti/Google Drive/000_7th Quarter/CS221/Project/Automotive_Dataset/automotive_test.csv',header=None)
-# d = df.values
     
-path = '/Users/srishti/Google Drive/000_7th Quarter/CS221/Project/untouched_data/reviews_Automotive_5.json'
-data = []
+# path = '/Users/srishti/Google Drive/000_7th Quarter/CS221/Project/untouched_data/reviews_Automotive_5.json'
+# data = []
+# with open(path) as f:
+#     for line in f:
+#         data.append(json.loads(line))
+
+
+number_of_data_points_to_read= 100000 #Select number of data points to read
+counter= 1
+data=[]
+path= '/Users/srishti/Desktop/reviews_Books_5.json'
 with open(path) as f:
     for line in f:
-        data.append(json.loads(line))
+        if counter <number_of_data_points_to_read:
+            data.append(json.loads(line))
+            counter+=1
+        else: 
+            break
 
 # d[1]
 # for j in data[1]:
