@@ -2,6 +2,7 @@ import collections
 import string
 import re
 import nltk
+import gzip
 import tensorflow as tf
 import pandas as pd
 import json
@@ -23,22 +24,41 @@ from nltk.stem import WordNetLemmatizer
 #         data.append(json.loads(line))
 
 
-number_of_data_points_to_read= 100000 #Select number of data points to read
+def parse(path):
+    g = gzip.open(path, 'r')
+    for l in g:
+        yield eval(l)
+
+number_of_data_points_to_read = 100000 #Select number of data points to read
 counter= 1
 data=[]
-path= '/Users/srishti/Desktop/reviews_Books_5.json'
-with open(path) as f:
-    for line in f:
-        if counter <number_of_data_points_to_read:
-            data.append(json.loads(line))
-            counter+=1
-        else: 
-            break
+path= 'reviews_Books_5.json.gz'
 
-# d[1]
-# for j in data[1]:
-#     print j
-# print data[1]['reviewText']
+for line in parse(path):
+    if counter <number_of_data_points_to_read:
+        data.append(line)
+        counter += 1
+    else:
+        break
+
+num_titles_to_read = 100000
+meta_data = []
+meta_path= 'meta_Books.json.gz'
+counter= 1
+
+for line in parse(meta_path):
+    if counter < num_titles_to_read:
+        meta_data.append(line)
+        counter += 1
+    else:
+        break
+asin_title_map = collections.defaultdict(list)
+
+for i in meta_data:
+    if 'title' in i.keys():
+        asin_title_map[i['asin']] = i['title']
+    else:
+        asin_title_map[i['asin']] = None
 
 X=[] #reviews
 Y=[] #ratings
@@ -152,7 +172,8 @@ test_list = [2, 5, 6, 7, 9, 11, 12, 13]
 for i in test_list:
     my_asin = asin_dict.keys()[i-1]
     print my_asin
-    print asin_dict[my_asin]
+    print asin_title_map[my_asin]
+    #print asin_dict[my_asin]
 
     keywords = TF_IDF(my_asin, asin_dict, 5)
     print keywords
