@@ -143,15 +143,22 @@ class LemmaTokenizer(object):
     def __call__(self, doc):
         return [self.wnl.lemmatize(t, 'n') for t in word_tokenize(doc)]
 
-# Returns a sorted list of tuples containing (word, weight)
-def TF_IDF(asin, asin_dict, n):
+def TF_IDF_all(asin_dict):
 
-    vectorizer = TfidfVectorizer(stop_words="english", analyzer='word', lowercase = True, tokenizer = LemmaTokenizer(), ngram_range=(1, 1), max_df=0.90)
+    #vectorizer = TfidfVectorizer(max_df = 0.90, min_df = 1, tokenizer = LemmaTokenizer(), use_idf = True, smooth_idf = True)
+    vectorizer = TfidfVectorizer(stop_words="english", analyzer='word', lowercase = True, tokenizer = LemmaTokenizer(), ngram_range=(1, 2), max_df=0.95)
 
-    vectorizer.fit_transform(list(asin_dict.values()))
-    tf = vectorizer.transform([asin_dict[asin]])
+    vec = vectorizer.fit_transform(list(asin_dict.values()))
     word_map=vectorizer.get_feature_names()
 
+    return vec, word_map
+
+def TF_IDF_asin(asin, asin_dict, vectorizer, word_map, n):
+    index = asin_dict.keys().index(asin)
+    print type(vectorizer)
+    print index
+    tf = vectorizer[index]
+    print tf
 
     keywords = []
     for col in tf.nonzero()[1]:
@@ -161,19 +168,20 @@ def TF_IDF(asin, asin_dict, n):
     sorted_keywords = sorted(keywords, key=lambda t: t[1] * -1)
 
     return sorted_keywords[:n]
-    
 
 ###########################
 # Run TF-IDF
 ###########################
 
-test_list = [2, 5, 6, 7, 9, 11, 12, 13]
+#test_list = [2, 5, 6, 7, 9, 11, 12, 13]
+test_list = [1]
+
+vec, map = TF_IDF_all(asin_dict)
 
 for i in test_list:
     my_asin = asin_dict.keys()[i-1]
     print my_asin
     print asin_title_map[my_asin]
-    #print asin_dict[my_asin]
 
-    keywords = TF_IDF(my_asin, asin_dict, 5)
+    keywords = TF_IDF_asin(my_asin, asin_dict, vec, map, 5)
     print keywords
